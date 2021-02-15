@@ -5,21 +5,28 @@ const statusGame = {
 };
 
 const gameConfigSchema = new Schema({
-  registered: { type: Date, default: new Date(), index: true },
+  createdAt: { type: Date, default: new Date(), index: true },
+  finalizedAt: { type: Date },
   winner: { type: String },
   winner_id: { type: Schema.Types.ObjectId },
   players: {
     player1: {
       _id: { type: Schema.Types.ObjectId },
       name: { type: String },
-      score: { type: Number, default: 0 },
+      won: { type: Number, default: 0 },
     },
     player2: {
       _id: { type: Schema.Types.ObjectId },
       name: { type: String },
-      score: { type: Number, default: 0 },
+      won: { type: Number, default: 0 },
     },
   },
+  score: [
+    {
+      ronda: { type: Number, default: 0 },
+      name: { type: String },
+    },
+  ],
   status_game: { type: String, default: "STARTS", enum: statusGame },
 });
 

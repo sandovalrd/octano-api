@@ -3,7 +3,6 @@ import { seedToken } from "../env_config";
 
 export default (req, res, next) => {
   const token = req.get("Authorization");
-  console.log("token", token);
 
   jwt.verify(token, seedToken, (err, user) => {
     if (err) {

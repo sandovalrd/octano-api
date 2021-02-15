@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 const movesDefault = ["rock", "paper", "scissors"];
 
 const moveSchema = new Schema({
+  createdAt: { type: Date, default: new Date(), index: true },
   name: {
     type: String,
     required: [true, "The name move is require!"],

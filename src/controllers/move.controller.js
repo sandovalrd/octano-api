@@ -3,7 +3,7 @@ import Move from "../models/Move";
 export default class MoveController {
   searchMoves(req, res) {
     Move.find({})
-      .sort("name")
+      .sort({ createdAt: "asc" })
       .exec((err, moves) => {
         if (err) {
           return res.status(400).send({
@@ -37,6 +37,7 @@ export default class MoveController {
 
   addMove(req, res) {
     const body = req.body;
+    console.log("req.body", req.body);
     const { name } = body;
 
     const move = new Move({

@@ -43,13 +43,13 @@ export default class MoveConfigController {
 
   async searchMovesConfig(req, res) {
     await MoveConfig.find({})
-      .then(async (items) => {
-        if (items.length === 0) {
+      .then(async (movesConfig) => {
+        if (movesConfig.length === 0) {
           return await this.InsertConfigDefaultMoves(req, res);
         }
         return res.send({
           status: "ok",
-          items,
+          movesConfig,
         });
       })
       .catch((err) => {

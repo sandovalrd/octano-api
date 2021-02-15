@@ -4,7 +4,7 @@ import Player from "../models/Player";
 export default class GameController {
   async searchGames(req, res) {
     Game.find({})
-      .sort("registered")
+      .sort({ createdAt: "desc" })
       .exec((err, games) => {
         if (err) {
           return res.status(400).send({
@@ -45,7 +45,7 @@ export default class GameController {
       },
     });
 
-    game.save((err, item) => {
+    game.save((err, game) => {
       if (err) {
         return res.status(400).send({
           status: "error",
@@ -55,7 +55,7 @@ export default class GameController {
 
       return res.send({
         status: "ok",
-        item,
+        game,
       });
     });
   }
@@ -81,28 +81,60 @@ export default class GameController {
       });
     }
 
+    if (game.status_game === "GAME_OVER") {
+      return res.status(400).send({
+        status: "error",
+        message: "Game finalized!",
+      });
+    }
+
     const { player1, player2 } = players;
+    const score = game.score.length;
 
-    player1.won && game.players.player1.score++;
-    player2.won && game.players.player2.score++;
+    if (player1.won) {
+      game.players.player1.won++;
+      game.score.push({
+        ronda: score + 1,
+        name: game.players.player1.name,
+      });
+    }
+    if (player2.won) {
+      game.players.player2.won++;
+      game.score.push({
+        ronda: score + 1,
+        name: game.players.player2.name,
+      });
+    }
+    if (!player1.won && !player2.won) {
+      game.score.push({
+        ronda: score + 1,
+        name: "Draw",
+      });
+    }
 
-    if (game.players.player1.score === 3) {
+    if (game.players.player1.won === 3) {
       game.status_game = "GAME_OVER";
       game.winner = game.players.player1.name;
       game.winner_id = game.players.player1._id;
+      game.finalizedAt = new Date();
+      await this.updateWinner(game.winner_id);
+      await this.updateLoss(game.players.player2._id);
     }
 
-    if (game.players.player2.score === 3) {
+    if (game.players.player2.won === 3) {
       game.status_game = "GAME_OVER";
       game.winner = game.players.player2.name;
       game.winner_id = game.players.player2._id;
+      game.finalizedAt = new Date();
+      await this.updateWinner(game.winner_id);
+      await this.updateLoss(game.players.player1._id);
     }
 
     Game.findByIdAndUpdate(
       { _id: id },
       game,
       { new: true, runValidators: true, context: "query" },
-      (err, item) => {
+      (err, game) => {
         if (err || game === null) {
           return res.status(400).send({
             status: "error",
@@ -112,7 +144,7 @@ export default class GameController {
 
         return res.send({
           status: "ok",
-          item,
+          game,
         });
       }
     );
@@ -125,5 +157,22 @@ export default class GameController {
     } else {
       return false;
     }
+  }
+
+  updateWinner(id) {
+    Player.findOne({ _id: id }).then(async (player) => {
+      if (player) {
+        player.won = player.won + 1;
+        return await player.save();
+      }
+    });
+  }
+  updateLoss(id) {
+    Player.findOne({ _id: id }).then(async (player) => {
+      if (player) {
+        player.loss = player.loss + 1;
+        return await player.save();
+      }
+    });
   }
 }

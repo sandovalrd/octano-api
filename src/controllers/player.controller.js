@@ -3,7 +3,7 @@ import Player from "../models/Player";
 export default class PlayerController {
   searchPlayer(req, res) {
     Player.find({})
-      .sort("name")
+      .sort("createdAt")
       .exec((err, players) => {
         if (err) {
           return res.status(400).send({

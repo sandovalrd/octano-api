@@ -1,5 +1,6 @@
 export default (req, res, next) => {
   const { move_id, move, skills, skills_id } = req.body;
+  console.log("req.body", req.body);
   if (
     move_id === undefined ||
     skills_id === undefined ||
